@@ -19,7 +19,7 @@
   --font: "Atkinson Hyperlegible", -apple-system, system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   --top: env(safe-area-inset-top, 0px); --bot: env(safe-area-inset-bottom, 0px);
-  --lens-h: 132px; --lens-y: 13vh;
+  --lens-h: 150px; --lens-y: 13vh; --size: 30px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,13 +39,25 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   text-align: center; touch-action: none;
 }
 .dir { font-size: 13px; font-style: italic; color: var(--gold); min-height: 1.2em; }
-.now { font-size: var(--size, 34px); line-height: 1.12; font-weight: 700; max-width: min(78vw, 520px); text-wrap: balance; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.now { font-size: var(--size, 30px); line-height: 1.12; font-weight: 700; max-width: min(78vw, 520px); text-wrap: balance; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
 .now em { font-style: normal; color: var(--gold); }
-.next { font-size: calc(var(--size, 34px) * .5); line-height: 1.2; color: var(--muted); font-weight: 700; max-width: min(78vw, 520px); }
+.next { font-size: calc(var(--size, 30px) * .5); line-height: 1.2; color: var(--muted); font-weight: 700; max-width: min(78vw, 520px); }
 .next em { font-style: normal; }
 .meter { width: min(60vw, 360px); height: 3px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; margin-top: 4px; }
 .meter i { display: block; height: 100%; width: 0; background: var(--go); }
-.lens.paused .now { opacity: .55; }
+.flashy { animation: nudge .18s ease-out; }
+@keyframes nudge { from { transform: translateY(6px); opacity: .4; } to { transform: none; opacity: 1; } }
+.eye { position: fixed; left: 12px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 52px); z-index: 4; display: flex; align-items: center; gap: 6px;
+  font-size: 12px; background: var(--glass); padding: 4px 9px; border-radius: 999px; }
+.eye svg { width: 18px; height: 18px; }
+.eye .shut { display: none; }
+.eye.closed .open { display: none; }
+.eye.closed .shut { display: inline; }
+.eye.closed { background: var(--go); color: var(--on-go); }
+.eyebar { position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden; }
+.eyebar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--go); }
+.eyebar b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--gold); }
+.sheet select { width: 100%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; color: var(--text); font: inherit; padding: 10px 12px; }
 .lens .hint-tap { font-size: 12px; color: var(--muted); }
 
 /* ---- side chips */
@@ -80,7 +92,7 @@ body.flash .next, body.flash .lens .hint-tap { color: rgba(0,0,0,.5); }
 body.flash .dir { color: #a86f00; }
 body.flash .meter { background: rgba(0,0,0,.12); }
 body.flash .bottom { background: none; }
-body.flash .side, body.flash .chip, body.flash .badge { background: rgba(0,0,0,.55); color: #fff; }
+body.flash .side, body.flash .chip, body.flash .badge, body.flash .eye { background: rgba(0,0,0,.55); color: #fff; }
 body.flash .rec { border-color: rgba(0,0,0,.8); }
 body.flash .chips { right: 32px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 16px); }
 body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 18px); }
@@ -116,7 +128,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
 <video id="cam" playsinline autoplay muted></video>
 <video id="review" playsinline controls hidden></video>
 
-<section class="lens" id="lens" aria-live="off" aria-label="Script. Tap to pause, swipe sideways to step.">
+<section class="lens" id="lens" aria-live="off" aria-label="Script. Blink or tap for the next line.">
   <div class="dir" id="dir"></div>
   <div class="now" id="now"></div>
   <div class="next" id="next"></div>
@@ -125,6 +137,11 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
 
 <div class="timer" id="timer" hidden>0:00</div>
 <div class="badge num" id="badge" hidden></div>
+<div class="eye" id="eye" hidden title="Blink to go to the next line">
+  <svg class="open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+  <svg class="shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11c2.5 3 5.5 4.5 9 4.5s6.5-1.5 9-4.5"/><path d="M7 15.5 5.5 18M12 16v3M17 15.5l1.5 2.5"/></svg>
+  <span id="eye-label">Blink</span>
+</div>
 <div class="chips" id="chips">
   <button class="chip" id="btn-flash" aria-label="Front flash" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></button>
   <button class="chip" id="btn-script" aria-label="Edit script"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
@@ -132,7 +149,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
 </div>
 
 <div class="bottom" id="bottom">
-  <button class="side" id="btn-top" aria-label="Back to the first line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></button>
+  <button class="side" id="btn-top" aria-label="Back one line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></button>
   <button class="rec" id="rec" aria-label="Start recording"><i></i></button>
   <button class="side right" id="btn-flip" aria-label="Flip camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.6-4.5M4 4v4h4M4 13a8 8 0 0 0 14.6 4.5M20 20v-4h-4"/></svg></button>
 </div>
@@ -155,12 +172,20 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
 
 <div class="sheet" id="sheet-settings" hidden>
   <h2>Settings</h2>
-  <label for="wpm">Reading speed <span class="num" id="wpm-out"></span></label><input type="range" id="wpm" min="110" max="240" step="5" value="170">
+  <div class="toggle"><span>Blink to go to the next line</span><input type="checkbox" id="blink" checked></div>
+  <label for="blinkmode">Which blinks count</label>
+  <select id="blinkmode">
+    <option value="any">Any blink, once you've had time to read the line</option>
+    <option value="long">Only a slow, deliberate blink</option>
+  </select>
+  <label for="sens">Blink sensitivity <span class="num" id="sens-out"></span></label><input type="range" id="sens" min="25" max="75" step="1" value="45">
+  <div class="eyebar" aria-hidden="true"><i id="eyelvl"></i><b id="eyethr"></b></div>
+  <p class="hint">The green bar is how closed your eyes are right now and the gold line is the trigger. Blink and the bar should jump past the line. Tapping the screen also moves to the next line.</p>
   <label for="lensy">Script position <span class="num" id="lensy-out"></span></label><input type="range" id="lensy" min="0" max="35" step="1" value="13">
   <p class="hint">Lower = you look straight ahead. Higher = closer to the lens. Try a few seconds of each.</p>
   <label for="size">Text size <span class="num" id="size-out"></span></label><input type="range" id="size" min="24" max="48" step="1" value="34">
   <div class="toggle"><span>3-2-1 countdown</span><input type="checkbox" id="cd" checked></div>
-  <div class="toggle"><span>Stop recording when the script ends</span><input type="checkbox" id="autostop" checked></div>
+  <div class="toggle"><span>Stop recording after the last line</span><input type="checkbox" id="autostop" checked></div>
   <div class="toggle"><span>Save selfie video exactly like the preview (mirrored)</span><input type="checkbox" id="mirror-save" checked></div>
   <p class="hint" id="camfmt"></p>
   <button class="btn go" id="settings-done">Done</button>
@@ -169,7 +194,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
 <div class="gate" id="gate">
   <div>
     <h1>ClaudeEdits Camera</h1>
-    <p>Read a few words at a time, right under the lens. Tap record and talk.</p>
+    <p>Your script shows one line at a time near the lens. Blink (or tap) when you finish a line to get the next one.</p>
     <button class="btn go big" id="start">Turn on camera</button>
     <p class="msg" id="gmsg" role="status"></p>
   </div>
@@ -197,64 +222,103 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   let script = fromHash() || store.get("script", null);
   if (script) store.set("script", script);
 
-  /* ---------- phrases: a few words at a time.
-     Breaks at "/", sentence ends, commas, and at most 5 words. Cue lines (# …) are skipped;
-     [directions] ride along with the phrase that follows them. */
-  function phrases(body) {
+  /* ---------- lines: one script line at a time; it only moves when you blink or tap.
+     Lines over 9 words split at their " / " beats. Cue lines (# …) are skipped;
+     [directions] ride along with the line that follows them. */
+  const count = (t) => (t.replace(/\*\*/g, "").match(/[A-Za-z0-9$%'’]+/g) || []).length;
+  function lines(body) {
     const out = []; let dir = "";
-    const push = (words) => {
-      const text = words.join(" ").trim(); if (!text) return;
-      const n = (text.replace(/\*\*/g, "").match(/[A-Za-z0-9$%'’]+/g) || []).length;
-      out.push({ text, n, dir }); dir = "";
-    };
     for (const raw of body.replace(/\r/g, "").split("\n")) {
       const line = raw.trim();
       if (!line || /^#/.test(line)) continue;
       if (/^\[.*\]$/.test(line)) { dir = line.slice(1, -1); continue; }
-      for (const part of line.split(/\s\/\s|\s\/$|^\/\s/)) {
-        let cur = [];
-        for (const w of part.split(/\s+/).filter(Boolean)) {
-          if (/^\[.*\]$/.test(w)) continue;
-          cur.push(w);
-          const plain = w.replace(/\*\*/g, "");
-          if (/[.!?:;]$/.test(plain) || (/,$/.test(plain) && cur.length >= 2) || cur.length >= 5) { push(cur); cur = []; }
-        }
-        push(cur);
-      }
+      const beats = line.replace(/\[[^\]]*\]/g, "").split(/\s*\/\s*/).map((b) => b.trim()).filter(Boolean);
+      let cur = [];
+      const push = () => { if (cur.length) { const text = cur.join(" "); out.push({ text, n: count(text), dir }); dir = ""; cur = []; } };
+      for (const b of beats) { if (cur.length && count(cur.join(" ") + " " + b) > 9) push(); cur.push(b); }
+      push();
     }
     return out;
   }
-  const fmtPhrase = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<em>$1</em>").replace(/\*\*/g, "");
-  let list = [], idx = 0, running = false, timerT = 0, endsAt = 0;
-  const durOf = (p) => (Math.max(1, p.n) / +$("wpm").value) * 60 + (/[.!?]$/.test(p.text.replace(/\*\*/g, "")) ? 0.32 : 0.12);
+  const fmtLine = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<em>$1</em>").replace(/\*\*/g, "");
+  let list = [], idx = 0, shownAt = 0, reviewing = false;
   function show() {
     const p = list[idx], q = list[idx + 1];
-    $("now").innerHTML = p ? fmtPhrase(p.text) : (script ? "" : "Tap the pencil to add your script");
-    $("next").innerHTML = q ? fmtPhrase(q.text) : (p ? "" : "");
+    $("now").innerHTML = p ? fmtLine(p.text) : (script ? "" : "Tap the pencil to add your script");
+    $("next").innerHTML = q ? fmtLine(q.text) : (p && idx === list.length - 1 ? "last line" : "");
     $("dir").textContent = p && p.dir ? p.dir : "";
     $("meter").style.width = list.length ? ((idx / Math.max(1, list.length - 1)) * 100).toFixed(1) + "%" : "0";
+    const now = $("now"); now.classList.remove("flashy"); void now.offsetWidth; now.classList.add("flashy");
+    shownAt = performance.now();
   }
-  function load() { list = script ? phrases(script.b || "") : []; idx = 0; show(); }
-  function step() {
-    if (!running) return;
+  function load() { list = script ? lines(script.b || "") : []; idx = 0; show(); }
+  // A natural blink while you're still reading must not skip the line, so "any blink" only counts once
+  // you've had time to read it (~210 words a minute). A slow blink always counts.
+  const readTime = (p) => Math.max(0.6, p.n * 0.28) * 1000;
+  let ending = false;
+  function next(kind) {
+    if (!list.length || reviewing || ending) return;
+    if (kind === "blink" && performance.now() - shownAt < readTime(list[idx])) return;
     if (idx >= list.length - 1) {
-      running = false; $("lens").classList.add("paused");
-      if (recorder && $("autostop").checked) timerT = setTimeout(stopRec, 900);
+      if (recorder && $("autostop").checked) { ending = true; setTimeout(() => { ending = false; stopRec(); }, 700); }
       return;
     }
-    idx++; show(); timerT = setTimeout(step, durOf(list[idx]) * 1000);
+    idx++; show();
   }
-  function go() { if (!list.length || running) return; running = true; $("lens").classList.remove("paused"); clearTimeout(timerT); timerT = setTimeout(step, durOf(list[idx]) * 1000); }
-  function hold() { running = false; clearTimeout(timerT); $("lens").classList.add("paused"); }
-  // tap to pause/resume, swipe sideways to step
-  let sx = null;
-  $("lens").addEventListener("pointerdown", (e) => { sx = e.clientX; });
-  $("lens").addEventListener("pointerup", (e) => {
-    if (sx == null) return; const dx = e.clientX - sx; sx = null;
-    if (Math.abs(dx) > 40) { const was = running; hold(); idx = Math.max(0, Math.min(list.length - 1, idx + (dx < 0 ? 1 : -1))); show(); if (was) go(); }
-    else (running ? hold() : go());
-  });
-  $("btn-top").addEventListener("click", () => { hold(); idx = 0; show(); });
+  function prev() { if (idx > 0) { idx--; show(); } }
+  $("lens").addEventListener("click", () => next("tap"));
+  $("cam").addEventListener("click", () => next("tap"));
+  $("btn-top").addEventListener("click", prev);
+
+  /* ---------- blink detection (MediaPipe face landmarks, runs on the phone) */
+  const MP = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1";
+  const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+  const eyes = { lm: null, closed: false, closedAt: 0, last: 0, started: false };
+  async function startBlink() {
+    if (eyes.started) return; eyes.started = true;
+    $("eye").hidden = false; $("eye-label").textContent = "Loading…";
+    try {
+      const mod = await import(MP + "/vision_bundle.mjs");
+      const files = await mod.FilesetResolver.forVisionTasks(MP + "/wasm");
+      const opts = (delegate) => ({ baseOptions: { modelAssetPath: MODEL, delegate }, runningMode: "VIDEO", numFaces: 1, outputFaceBlendshapes: true });
+      try { eyes.lm = await mod.FaceLandmarker.createFromOptions(files, opts("GPU")); }
+      catch { eyes.lm = await mod.FaceLandmarker.createFromOptions(files, opts("CPU")); }
+      $("eye-label").textContent = "Blink"; toast("Blink when you finish a line");
+      watch();
+    } catch (e) {
+      $("eye").hidden = true; eyes.started = false;
+      toast("Blink control didn't load. Tap the screen for the next line.");
+    }
+  }
+  function watch() {
+    const tick = () => {
+      const now = performance.now();
+      if (eyes.lm && $("blink").checked && !reviewing && cam.readyState >= 2 && now - eyes.last > 45) {
+        eyes.last = now;
+        try {
+          const cats = eyes.lm.detectForVideo(cam, now).faceBlendshapes?.[0]?.categories;
+          let l = 0, r = 0;
+          if (cats) for (const c of cats) { if (c.categoryName === "eyeBlinkLeft") l = c.score; else if (c.categoryName === "eyeBlinkRight") r = c.score; }
+          onEyes(cats ? (l + r) / 2 : 0);
+        } catch {}
+      }
+      cam.requestVideoFrameCallback ? cam.requestVideoFrameCallback(tick) : requestAnimationFrame(tick);
+    };
+    tick();
+  }
+  function onEyes(v) {
+    const thr = +$("sens").value / 100;
+    $("eyelvl").style.width = (v * 100).toFixed(0) + "%";
+    $("eye").classList.toggle("closed", v > thr);
+    if (!eyes.closed && v > thr) { eyes.closed = true; eyes.closedAt = performance.now(); return; }
+    if (eyes.closed && v < thr * 0.7) {
+      eyes.closed = false;
+      const held = performance.now() - eyes.closedAt;
+      if (held > 1500) return; // eyes were shut a long time (looking down, adjusting): ignore
+      if ($("blinkmode").value === "long") { if (held >= 280) next("tap"); }
+      else next(held >= 280 ? "tap" : "blink");
+    }
+  }
 
   /* ---------- settings */
   function bindRange(id, fmtOut, apply) {
@@ -262,10 +326,12 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
     const upd = () => { $(id + "-out").textContent = fmtOut(el.value); store.set(id, +el.value); apply(+el.value); };
     el.addEventListener("input", upd); upd();
   }
-  bindRange("wpm", (v) => v + " wpm", () => {});
+  bindRange("sens", (v) => v + "%", (v) => ($("eyethr").style.left = v + "%"));
   bindRange("lensy", (v) => (+v === 0 ? "top" : v + "% down"), (v) => document.documentElement.style.setProperty("--lens-y", v + "vh"));
   bindRange("size", (v) => v + "px", (v) => document.documentElement.style.setProperty("--size", v + "px"));
-  for (const id of ["cd", "autostop", "mirror-save"]) { const el = $(id); el.checked = store.get(id, el.checked); el.addEventListener("change", () => store.set(id, el.checked)); }
+  { const m = $("blinkmode"); m.value = store.get("blinkmode", m.value); m.addEventListener("change", () => store.set("blinkmode", m.value)); }
+  for (const id of ["cd", "autostop", "mirror-save", "blink"]) { const el = $(id); el.checked = store.get(id, el.checked); el.addEventListener("change", () => store.set(id, el.checked)); }
+  $("blink").addEventListener("change", () => { $("eye").hidden = !$("blink").checked; if ($("blink").checked && $("gate").hidden) startBlink(); });
   $("btn-settings").addEventListener("click", () => ($("sheet-settings").hidden = false));
   $("settings-done").addEventListener("click", () => ($("sheet-settings").hidden = true));
   $("btn-script").addEventListener("click", () => { $("script-in").value = script ? script.b : ""; $("sheet-script").hidden = false; });
@@ -309,7 +375,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   $("start").addEventListener("click", async () => {
     $("gmsg").textContent = "";
     if (!navigator.mediaDevices?.getUserMedia) { $("gmsg").textContent = "This browser can't open the camera here. Open the page in Safari or Chrome."; return; }
-    try { await startCamera(); $("gate").hidden = true; load(); }
+    try { await startCamera(); $("gate").hidden = true; load(); if ($("blink").checked) startBlink(); }
     catch (e) { $("gmsg").textContent = e.name === "NotAllowedError" ? "Camera access was blocked. Allow the camera and microphone for this site in your browser settings, then try again." : "Couldn't start the camera (" + e.name + ")."; }
   });
   $("btn-flip").addEventListener("click", async () => { if (recorder) return; facing = facing === "user" ? "environment" : "user"; try { await startCamera(); } catch {} });
@@ -340,11 +406,11 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   }
   async function startRec() {
     counting = true; $("rec").classList.add("on"); $("rec").setAttribute("aria-label", "Stop recording");
-    hold(); idx = 0; show();
+    idx = 0; show();
     if (!(await countdown())) return;
     counting = false; chunks = [];
     const type = pickType();
-    recorder = new MediaRecorder(recordStream(), { mimeType: type || undefined, videoBitsPerSecond: 16_000_000, audioBitsPerSecond: 192_000 });
+    recorder = new MediaRecorder(recordStream(), { mimeType: type || undefined, videoBitsPerSecond: 12_000_000, audioBitsPerSecond: 192_000 });
     recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
     recorder.onstop = finish;
     recorder.start(1000);
@@ -352,7 +418,6 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
     tick = setInterval(() => ($("timer").textContent = fmt((Date.now() - t0) / 1000)), 250);
     $("btn-flip").disabled = true;
     try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
-    go();
   }
   function stopRec() {
     if (counting) { counting = false; $("count").hidden = true; $("rec").classList.remove("on"); return; }
@@ -360,7 +425,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   }
   const chrome = ["lens", "chips", "bottom", "badge"];
   function finish() {
-    drawing = false; clearInterval(tick); hold();
+    drawing = false; clearInterval(tick); reviewing = true;
     $("timer").hidden = true; $("rec").classList.remove("on"); $("rec").setAttribute("aria-label", "Start recording"); $("btn-flip").disabled = false;
     try { wakeLock?.release(); } catch {}
     blob = new Blob(chunks, { type: (recorder.mimeType || "video/mp4").split(";")[0] });
@@ -376,7 +441,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   $("retake").addEventListener("click", () => {
     const rv = $("review"); rv.pause(); rv.hidden = true; $("review-bar").hidden = true;
     chrome.forEach((id) => ($(id).hidden = false)); $("badge").hidden = !$("badge").textContent;
-    setFlash(store.get("flash", false), false); idx = 0; show();
+    setFlash(store.get("flash", false), false); reviewing = false; idx = 0; show();
   });
   // Send: save to the phone, then jump straight to the Prompter's Send tab.
   $("send").addEventListener("click", async () => {
