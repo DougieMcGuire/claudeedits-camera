@@ -160,7 +160,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
   <div class="msg" id="rmsg" role="status"></div>
   <button class="btn go big" id="send">Send to Claude</button>
   <div class="row"><button class="btn grow" id="retake">Retake</button></div>
-  <p class="hint" style="text-align:center">Send saves the video to your phone, then opens the Prompter so you can pick it. Claude takes it from there.</p>
+  <p class="hint" style="text-align:center">Tap Send, choose <b>Drive</b>, and save it into the <b>ClaudeEdits Takes</b> folder. Then tell Claude "edit my take".</p>
 </div>
 
 <div class="sheet" id="sheet-script" hidden>
@@ -454,14 +454,12 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--len
     try {
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: name });
-        $("rmsg").textContent = "Saved. Opening the Prompter…";
-        setTimeout(() => (location.href = PROMPTER), 600);
+        $("rmsg").textContent = "Done. Tell Claude \"edit my take\".";
         return;
       }
     } catch (e) { if (e.name === "AbortError") { $("rmsg").textContent = "Not sent. Tap Send to Claude, then Save Video."; return; } }
     const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    $("rmsg").textContent = "Downloaded. Opening the Prompter…";
-    setTimeout(() => (location.href = PROMPTER), 1200);
+    $("rmsg").textContent = "Downloaded. Put it in the ClaudeEdits Takes folder in Google Drive.";
   });
 
   load();
