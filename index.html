@@ -19,7 +19,7 @@
   --font: "Atkinson Hyperlegible", -apple-system, system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   --top: env(safe-area-inset-top, 0px); --bot: env(safe-area-inset-bottom, 0px);
-  --lens-h: 132px;
+  --lens-h: 132px; --lens-y: 13vh;
   color-scheme: dark;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -33,9 +33,10 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 /* ---- lens reader: pinned to the very top, centered under the camera */
 .lens {
-  position: fixed; left: 0; right: 0; top: 0; z-index: 3; padding: calc(var(--top) + 6px) 18px 14px;
-  min-height: calc(var(--top) + var(--lens-h)); display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: linear-gradient(rgba(0,0,0,.78), rgba(0,0,0,.6) 75%, rgba(0,0,0,0)); text-align: center; touch-action: none;
+  position: fixed; left: 0; right: 0; top: calc(var(--top) + var(--lens-y)); z-index: 3; padding: 10px 18px 14px;
+  min-height: var(--lens-h); display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.55) 22%, rgba(0,0,0,.55) 72%, rgba(0,0,0,0));
+  text-align: center; touch-action: none;
 }
 .dir { font-size: 13px; font-style: italic; color: var(--gold); min-height: 1.2em; }
 .now { font-size: var(--size, 34px); line-height: 1.12; font-weight: 700; max-width: min(78vw, 520px); text-wrap: balance; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
@@ -48,13 +49,13 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .lens .hint-tap { font-size: 12px; color: var(--muted); }
 
 /* ---- side chips */
-.chips { position: fixed; right: 12px; top: calc(var(--top) + var(--lens-h) + 10px); z-index: 4; display: flex; flex-direction: column; gap: 10px; }
+.chips { position: fixed; right: 12px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 10px); z-index: 4; display: flex; flex-direction: column; gap: 10px; }
 .chip { width: 44px; height: 44px; border-radius: 50%; background: var(--glass); display: grid; place-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .chip svg { width: 22px; height: 22px; }
 .chip#btn-flash[aria-pressed="true"] { background: var(--gold); color: #000; }
-.timer { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--top) + var(--lens-h) + 12px); z-index: 4;
+.timer { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 12px); z-index: 4;
   background: var(--rec); color: #fff; font-family: var(--mono); font-weight: 600; font-size: 15px; padding: 4px 12px; border-radius: 999px; font-variant-numeric: tabular-nums; }
-.badge { position: fixed; left: 12px; top: calc(var(--top) + var(--lens-h) + 14px); z-index: 4; font-family: var(--mono); font-size: 12px; background: var(--glass); padding: 4px 8px; border-radius: 6px; }
+.badge { position: fixed; left: 12px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 14px); z-index: 4; font-family: var(--mono); font-size: 12px; background: var(--glass); padding: 4px 8px; border-radius: 6px; }
 
 /* ---- bottom */
 .bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; padding: 16px 24px calc(var(--bot) + 20px); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: linear-gradient(transparent, rgba(0,0,0,.45)); }
@@ -70,9 +71,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 /* ---- front flash: the screen becomes a warm ring light around a framed preview */
 body.flash { --flash: #fff6ea; background: var(--flash); }
-body.flash #cam { top: calc(var(--top) + var(--lens-h) + 4px); left: 22px; right: auto; bottom: auto;
-  width: calc(100% - 44px); height: calc(100% - var(--top) - var(--lens-h) - 4px - var(--bot) - 132px); border-radius: 22px; }
-body.flash .lens { background: var(--flash); color: #141414; }
+body.flash #cam { top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 4px); left: 22px; right: auto; bottom: auto;
+  width: calc(100% - 44px); height: calc(100% - var(--top) - var(--lens-y) - var(--lens-h) - 4px - var(--bot) - 132px); border-radius: 22px; }
+body.flash .lens { background: none; color: #141414; }
 body.flash .now { text-shadow: none; }
 body.flash .now em { color: #a86f00; }
 body.flash .next, body.flash .lens .hint-tap { color: rgba(0,0,0,.5); }
@@ -81,8 +82,8 @@ body.flash .meter { background: rgba(0,0,0,.12); }
 body.flash .bottom { background: none; }
 body.flash .side, body.flash .chip, body.flash .badge { background: rgba(0,0,0,.55); color: #fff; }
 body.flash .rec { border-color: rgba(0,0,0,.8); }
-body.flash .chips { right: 32px; top: calc(var(--top) + var(--lens-h) + 16px); }
-body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-h) + 18px); }
+body.flash .chips { right: 32px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 16px); }
+body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-y) + var(--lens-h) + 18px); }
 
 /* ---- sheets & review */
 .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--glass-strong); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -155,6 +156,8 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-h) + 18px); }
 <div class="sheet" id="sheet-settings" hidden>
   <h2>Settings</h2>
   <label for="wpm">Reading speed <span class="num" id="wpm-out"></span></label><input type="range" id="wpm" min="110" max="240" step="5" value="170">
+  <label for="lensy">Script position <span class="num" id="lensy-out"></span></label><input type="range" id="lensy" min="0" max="35" step="1" value="13">
+  <p class="hint">Lower = you look straight ahead. Higher = closer to the lens. Try a few seconds of each.</p>
   <label for="size">Text size <span class="num" id="size-out"></span></label><input type="range" id="size" min="24" max="48" step="1" value="34">
   <div class="toggle"><span>3-2-1 countdown</span><input type="checkbox" id="cd" checked></div>
   <div class="toggle"><span>Stop recording when the script ends</span><input type="checkbox" id="autostop" checked></div>
@@ -260,6 +263,7 @@ body.flash .badge { left: 32px; top: calc(var(--top) + var(--lens-h) + 18px); }
     el.addEventListener("input", upd); upd();
   }
   bindRange("wpm", (v) => v + " wpm", () => {});
+  bindRange("lensy", (v) => (+v === 0 ? "top" : v + "% down"), (v) => document.documentElement.style.setProperty("--lens-y", v + "vh"));
   bindRange("size", (v) => v + "px", (v) => document.documentElement.style.setProperty("--size", v + "px"));
   for (const id of ["cd", "autostop", "mirror-save"]) { const el = $(id); el.checked = store.get(id, el.checked); el.addEventListener("change", () => store.set(id, el.checked)); }
   $("btn-settings").addEventListener("click", () => ($("sheet-settings").hidden = false));
